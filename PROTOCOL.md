@@ -1,40 +1,87 @@
 # Axolotl Protocol v0.1
 
 ## 1. Overview
-The Axolotl Protocol aims to implement Reed-Solomon and Elgamal encryption in order to ensure
-data integrity without the use of ARQ.
+The Axolotl Protocol implements Reed-Solomon erasure coding and ElGamal encryption to ensure
+data integrity and confidentiality over UDP, without the use of ARQ (Automatic Repeat Request).
+Once a message is sent, it is never retransmitted. Loss correction is handled entirely by Reed-Solomon.
 
 ## 2. Goals and Non-Goals
-- Total data integrity even if connection is terminated after intial send.
-- Security
-## 3. Packet Format
-Data will be split into Limbs. Each Limb will hold 16 packets each with 16 bytes each, for a total of 256 bytes. (Each Limb is a Reed-Solomon codeword).
-This happens so that the receiver will know how to structure the data. This is required for Reed-Solomon
-to work correctly. If a packet takes too long to send we treat it as lost and fill its positions with 0.
-This allows us to correct up to 25% loss per Limb (4 lost packets). UDP loss is around 5% under normal conditions.
-With WiFi and other conditions we expect it to raise to 15%, way below our threshold.
+**Goals:**
+- Data integrity even under packet loss, without retransmission.
+- Confidentiality via ElGamal encryption.
+- Simplicity: no handshake, no session state, no ARQ.
 
-Further testing will be done.
+**Non-Goals:**
+- Guaranteed delivery (loss beyond 25% per Limb will cause irrecoverable data loss).
+- Perfect forward secrecy (future work).
+- Protection against active attackers (ciphertext is malleable — see §7).
 
-## 4. Sender Algorithm
-1. Data will be split to Limbs. Each Limb will hold 32 bytes of raw data.
-2. Encrypt data, using ElGamal. ElGamal encrypts a 32 byte data to 2 ciphertexts the size of 64 bytes. So each Limb will have 128 bytes of data
-3. Encode using Reed-Solomon. This appends 128 bytes. So the total is 256 bytes and the Limb is ready to be sent.
+## 3. Terminology
+- **Axolotl Packet**: A 16-byte logical unit. The atomic piece of data sent in one UDP datagram.
+- **Limb**: A 256-byte Reed-Solomon codeword. Consists of 16 Axolotl packets. Each Limb is independent and self-contained.
+- **UDP Datagram**: The actual network packet carrying one Axolotl packet on the wire.
 
-## 5. Receiver Algorithm
-1. Receiver knows how much data it expects per Limb (32 bytes raw, 256 encrypted and encoded)
-2. Packages are numbered. A timer will be set and if it exceeds a certain amount of ms we will consider the package lost and fill its positions with 0.
-3. Receiver will decode the package. Correcting any errors and leaving only the encrypted ciphertexts.
-4. Using ElGamal the ciphers will be decrypted and the data will be re-constructred.
+## 4. Limb Structure
+A Limb is always exactly 256 bytes, split into 16 Axolotl packets of 16 bytes each:
 
-## 6. Parameters
-WIP
+| Packets | Bytes in Limb | Content          |
+|---------|---------------|------------------|
+| 0 – 3   | 0   – 63      | c1 (ElGamal)     |
+| 4 – 7   | 64  – 127     | c2 (ElGamal)     |
+| 8 – 15  | 128 – 255     | RS parity        |
 
-## 7. Security Properties
-Currently the security is not up to par with modern security standards.
-ElGamal commonly uses >2056 prime number but right now it uses a 512 byte prime number.
-The cipher text is mallable.
+- **c1** and **c2** are the two 64-byte components of the ElGamal ciphertext, each derived from encrypting 32 bytes of raw data.
+- **RS parity** is 128 bytes appended by Reed-Solomon encoding over GF(256), giving n=256, k=128.
+- Raw data shorter than 32 bytes is padded with random bytes to exactly 32 bytes before encryption.
+- Messages longer than 32 bytes are split across multiple Limbs (one Limb per 32 bytes of raw data).
 
-Security **will** be updated once the skeleton of the protocol is formatted.
-## 8. Known Limitations
-- If more than 25% loss is experienced, data loss is to be expected.
+## 5. Sender Algorithm
+1. Split the raw message into 32-byte chunks. Pad the final chunk with random bytes if needed.
+2. For each chunk, encrypt using ElGamal → produces c1 (64 bytes) and c2 (64 bytes) = 128 bytes total.
+3. Reed-Solomon encode the 128-byte ciphertext → appends 128 parity bytes → 256-byte Limb.
+4. Split the Limb into 16 Axolotl packets of 16 bytes each.
+5. Send each packet sequentially as a UDP datagram. Send all Limbs sequentially.
+
+## 6. Receiver Algorithm
+1. For each expected Axolotl packet, open a 50ms timer upon sending the previous packet.
+2. If the packet arrives within 50ms, place its 16 bytes at the correct position in the Limb buffer.
+3. If the timer expires, treat the packet as lost: fill its 16 positions in the Limb buffer with 0x00 (known erasures).
+4. Once all 16 packets have been received or timed out, run Reed-Solomon erasure decoding on the 256-byte buffer.
+   - Known erasure positions are the zero-filled slots.
+   - Up to 4 lost packets (64 erasure bytes) can be corrected, since 2t ≤ 128 parity bytes.
+5. Extract the recovered c1 (bytes 0–63) and c2 (bytes 64–127).
+6. Decrypt using ElGamal → 32 bytes of raw data.
+7. Repeat for each Limb. Concatenate all recovered chunks to reconstruct the original message.
+8. Strip trailing padding from the final chunk based on known message length (TBD — see §9).
+
+## 7. Parameters
+| Parameter         | Value                        |
+|-------------------|------------------------------|
+| RS field          | GF(256)                      |
+| RS codeword (n)   | 256 symbols (bytes)          |
+| RS data (k)       | 128 symbols (bytes)          |
+| RS parity (n-k)   | 128 symbols (bytes)          |
+| Max erasures      | 128 bytes = 8 packets        |
+| Target max loss   | 4 packets (25%) per Limb     |
+| Limb size         | 256 bytes                    |
+| Raw data per Limb | 32 bytes                     |
+| Axolotl packet    | 16 bytes                     |
+| Packets per Limb  | 16                           |
+| Per-packet timer  | 50ms                         |
+| ElGamal prime     | 512-bit safe prime (see §8)  |
+
+## 8. Security Properties
+Current security is intentionally minimal for the v0.1 skeleton:
+
+- **ElGamal prime size**: 512-bit. Modern standard is ≥2048-bit. This will be updated.
+- **Malleability**: ElGamal ciphertexts are malleable. An attacker can multiply c2 by a known value to produce a predictable change in plaintext. No authentication or MAC is present yet.
+- **RNG**: Key generation and encryption use `time(NULL)` as RNG seed — **not cryptographically secure**. Will be replaced with `/dev/urandom`.
+- **Fixed-width serialization**: c1 and c2 must be serialized to exactly 64 bytes each (left-padded with zeros if needed), otherwise RS byte alignment breaks.
+
+Security hardening is deferred until the protocol skeleton is complete and tested.
+
+## 9. Known Limitations & Open Questions
+- Loss beyond 4 packets (25%) per Limb causes irrecoverable data loss for that Limb.
+- No mechanism yet for the receiver to know the original message length (needed to strip padding from final Limb). To be defined.
+- No authentication — receiver cannot verify sender identity or message integrity beyond RS error correction.
+- Single-send only: if the entire transmission is lost (e.g. network down), there is no recovery.
