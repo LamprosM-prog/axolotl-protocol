@@ -42,7 +42,6 @@ void generate_pkey(mpz_t result, mpz_t g, mpz_t x, mpz_t p){
 
 void encrypt(ElgamalCiphertext* result, mpz_t msg, mpz_t pkey, ElGamalParam* params){
     gmp_randstate_t state;
-    gmp_randstate_t state;
     unsigned long seed;
     FILE *f = fopen("/dev/urandom", "rb");
     fread(&seed, sizeof(seed), 1, f);
