@@ -93,3 +93,8 @@ Current security is intentionally minimal for the v0.1 skeleton:
 - **RNG**: Key generation uses `/dev/urandom`. Encryption ephemeral key also uses `/dev/urandom`.
 
 Security hardening is deferred until the protocol skeleton is complete and tested. See `PROTOCOL.md` for full specification.
+## Acknowledgements
+
+Tested on the [ProLUG]([https://discord.gg/23dQAQ42e]) lab environment — 
+a community-run Linux upskilling lab. Thanks to the ProLUG community 
+for the test infrastructure and feedback.
