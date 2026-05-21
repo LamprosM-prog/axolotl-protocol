@@ -6,15 +6,15 @@
 #include <unistd.h>
 #include "axolotl.h"
 
-#define RECEIVER_IP "YOUR_RECEIVER_IP_HERE"
 #define PORT 9000
 
 
-int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        printf("Usage: ./sender <receiver_pkey_hex>\n");
+int main(int argc, char *argv[]) {  
+    if (argc < 3) {
+        printf("Usage: ./sender <receiver_pkey_hex> <receiver_ip>\n");
         return 1;
     }
+    inet_addr(argv[2]);
 
     ElGamalParam params;
     mpz_init(params.p);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in dest;
     dest.sin_family      = AF_INET;
     dest.sin_port        = htons(PORT);
-    dest.sin_addr.s_addr = inet_addr(RECEIVER_IP);
+    dest.sin_addr.s_addr = inet_addr(argv[2]);  
 
     int ret = axolotl_send(sockfd, &dest, sess);
     if (ret < 0) printf("Send failed\n");
