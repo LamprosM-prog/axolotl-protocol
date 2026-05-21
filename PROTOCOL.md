@@ -43,8 +43,8 @@ A Limb is always exactly 256 bytes, split into 16 Axolotl packets of 16 bytes ea
 5. Send each packet sequentially as a UDP datagram. Send all Limbs sequentially.
 
 ## 6. Receiver Algorithm
-1. For each expected Axolotl packet, open a 50ms timer upon sending the previous packet.
-2. If the packet arrives within 50ms, place its 16 bytes at the correct position in the Limb buffer.
+1. For each expected Axolotl packet, open a 500ms timer upon sending the previous packet.
+2. If the packet arrives within 500ms, place its 16 bytes at the correct position in the Limb buffer.
 3. If the timer expires, treat the packet as lost: fill its 16 positions in the Limb buffer with 0x00 (known erasures).
 4. Once all 16 packets have been received or timed out, run Reed-Solomon erasure decoding on the 256-byte buffer.
    - Known erasure positions are the zero-filled slots.
@@ -67,7 +67,7 @@ A Limb is always exactly 256 bytes, split into 16 Axolotl packets of 16 bytes ea
 | Raw data per Limb | 32 bytes                     |
 | Axolotl packet    | 16 bytes                     |
 | Packets per Limb  | 16                           |
-| Per-packet timer  | 50ms                         |
+| Per-packet timer  | 500ms                         |
 | ElGamal prime     | 512-bit safe prime (see §8)  |
 
 ## 8. Security Properties
