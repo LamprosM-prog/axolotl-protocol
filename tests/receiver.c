@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include "axolotl.h"
+#include <stdlib.h> 
 
 #define PORT 9000
 
