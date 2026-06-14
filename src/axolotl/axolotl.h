@@ -3,12 +3,24 @@
 #include <stdbool.h>
 #include <netinet/in.h>
 #include "../elgamal/elgamal.h"
+#include "../fss/fss.h"
 
-#define PACKET_SIZE       16
-#define PACKETS_PER_LIMB  16
-#define LIMB_SIZE         256
-#define RAW_CHUNK_SIZE    32
-#define CIPHERTEXT_SIZE   128
+#define RAW_CHUNK_SIZE   32
+#define C1_SIZE          512
+#define C2_SIZE          512
+#define E_SIZE           32
+#define S_SIZE           256
+#define PADDING_SIZE     288
+#define DATA_BYTES       1600   // 800 symbols * 2 bytes
+#define LIMB_SIZE        3200   // 1600 symbols * 2 bytes
+#define PACKETS_PER_LIMB 32
+#define PACKET_SIZE      100
+
+typedef enum {
+    LIMB_OK,
+    LIMB_LOST,
+    LIMB_TAMPERED,
+} LimbStatus;
 
 typedef struct {
     uint8_t data[PACKET_SIZE];
@@ -33,7 +45,7 @@ typedef struct {
 } SessionOpen;
 
 // API
-AxolotlSession *axolotl_init(uint8_t *data, uint32_t len, mpz_t pkey, ElGamalParam *params);
+AxolotlSession *axolotl_init(uint8_t *data, uint32_t len, mpz_t pkey, ElGamalParam *params, FSParams *fss_params, FSSkey *fss_skey);
 int axolotl_send(int sockfd, struct sockaddr_in *dest, AxolotlSession *sess);
-int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, ElGamalParam *params);
+int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, ElGamalParam *params,FSParams *fss_params, FSPkey *fss_pkey, LimbStatus **limb_statuses);
 void axolotl_free(AxolotlSession *sess);
