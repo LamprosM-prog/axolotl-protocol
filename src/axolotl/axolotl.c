@@ -235,7 +235,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         }
         
 
-        uint16_t *syn = compute_syndromes(codeword, 1600, 800);
+        uint16_t *syn = compute_syndromes(sym_in, 1600, 800);
         if (check_errors(syn, 800)) {
             int bm_len, err_count;
             uint16_t *lambda = berlekamp_massey(syn, 800, &bm_len);
