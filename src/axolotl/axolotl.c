@@ -200,6 +200,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
     tv.tv_usec = 500000;
     setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
+    gf_init();
 
     for (uint32_t l = 0; l < open.num_limbs; l++) {
         limbs[l].limb_id  = l;
