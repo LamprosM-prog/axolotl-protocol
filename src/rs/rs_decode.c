@@ -57,7 +57,7 @@ uint16_t *berlekamp_massey(uint16_t *syndromes, int ecc_len, int *out_len)
         {
             //
             uint16_t *temp = malloc(size * sizeof(uint16_t));
-            memcpy(temp, lambda, size);
+            memcpy(temp, lambda, size * sizeof(uint16_t));
 
             int shift = k - m;
             // λ = λ - (δ/b) * x^shift * B
@@ -92,7 +92,7 @@ uint16_t *berlekamp_massey(uint16_t *syndromes, int ecc_len, int *out_len)
         last--;
 
     // reverse to highest-first before returning
-    uint16_t *result = malloc(last + 1 * sizeof(uint16_t));
+    uint16_t *result = malloc((last + 1) * sizeof(uint16_t));
     for (int i = 0; i <= last; i++)
     {
         result[i] = lambda[last - i];
