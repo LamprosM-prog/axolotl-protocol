@@ -1,5 +1,6 @@
 CC     = gcc
 CFLAGS = -Wall -Wextra -g -I./src/axolotl -I./src/elgamal -I./src/rs -I./src/fss
+ASAN   = -fsanitize=address -fno-omit-frame-pointer
 LIBS   = -lgmp
 
 SRC = src/axolotl/axolotl.c \
@@ -25,5 +26,11 @@ sender_raw: tests/sender_raw.c
 receiver_raw: tests/receiver_raw.c
 	$(CC) $(CFLAGS) -o receiver_raw tests/receiver_raw.c
 
+sender_asan: tests/sender.c $(SRC)
+	$(CC) $(CFLAGS) $(ASAN) -o sender_asan tests/sender.c $(SRC) $(LIBS)
+
+receiver_asan: tests/receiver.c $(SRC)
+	$(CC) $(CFLAGS) $(ASAN) -o receiver_asan tests/receiver.c $(SRC) $(LIBS)
+
 clean:
-	rm -f sender receiver sender_raw receiver_raw
+	rm -f sender receiver sender_raw receiver_raw sender_asan receiver_asan
