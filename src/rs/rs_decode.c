@@ -146,7 +146,7 @@ uint16_t *forney(uint16_t *lambda, int lambda_len, uint16_t *syndromes,
     int omega_scaled_len;
     if (out_len_omega > ecc_len)
     {
-        omaga_scaled = malloc(ecc_len);
+        omaga_scaled = malloc(ecc_len * sizeof(uint16_t));
         omega_scaled_len = ecc_len;
         for (int i = 0; i < ecc_len; i++)
         {
