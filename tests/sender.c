@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     printf("Press Enter once pasted into receiver...\n");
     getchar();
 
-    uint8_t *msg = (uint8_t *)"This is a 64 byte test message for axolotl protocol!!!!!";
+    uint8_t *msg = (uint8_t *)"This sentence is exactly sixty-four bytes long for testing!!!!!!";
     uint32_t len = 64;
 
     AxolotlSession *sess = axolotl_init(msg, len, pkey, &params, &fss_params, &fss_skey);
