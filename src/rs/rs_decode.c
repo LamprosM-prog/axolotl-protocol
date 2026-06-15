@@ -125,7 +125,7 @@ int *chien_search(uint16_t *lambda, int lambda_len, int codeword_len,
             }
         }
     }
-
+    
     return positions;
 }
 uint16_t *forney(uint16_t *lambda, int lambda_len, uint16_t *syndromes,

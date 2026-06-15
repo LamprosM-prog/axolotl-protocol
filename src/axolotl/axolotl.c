@@ -210,6 +210,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             int ret = recvfrom(sockfd, limbs[l].slots[p].data, PACKET_SIZE, 0,
                                (struct sockaddr *)&client_addr, &client_len);
             if (ret > 0) {
+                printf("Limb %d: packet %d received\n", l, p);
                 limbs[l].slots[p].received = true;
             } else {
                 memset(limbs[l].slots[p].data, 0, PACKET_SIZE);
@@ -240,8 +241,11 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         if (check_errors(syn, 800)) {
             int bm_len, err_count;
             uint16_t *lambda = berlekamp_massey(syn, 800, &bm_len);
+            printf("Limb %u: err_count=%d\n", l, err_count);
             int *pos = chien_search(lambda, bm_len, 1600, &err_count);
+            printf("Limb %u: err_count=%d\n", l, err_count);
             if(err_count < 0 || err_count > 400){
+                printf("Limb %u: err_count=%d\n", l, err_count);
                 (*limb_statuses)[l] = LIMB_LOST;
                 free(syn);
                 free(lambda);
@@ -293,6 +297,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         memcpy(out_buf + *out_len, chunk, RAW_CHUNK_SIZE);
         *out_len += RAW_CHUNK_SIZE;
         (*limb_statuses)[l] = LIMB_OK;
+        
     }
 
     // strip to actual length
