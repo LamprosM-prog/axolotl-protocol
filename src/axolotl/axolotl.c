@@ -250,7 +250,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             }
             
             
-            uint16_t* fixed = forney(lambda, bm_len, syn, 800, sym_in, 1600, pos, err_count);
+            forney(lambda, bm_len, syn, 800, sym_in, 1600, pos, err_count);
 
             free(lambda);
             free(pos);
