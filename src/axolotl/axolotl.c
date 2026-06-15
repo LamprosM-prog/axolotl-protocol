@@ -210,7 +210,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         for (int p = 0; p < PACKETS_PER_LIMB; p++) {
             int ret = recvfrom(sockfd, limbs[l].slots[p].data, PACKET_SIZE, 0,
                                (struct sockaddr *)&client_addr, &client_len);
-            if (ret > 0) {
+            if (ret == PACKET_SIZE) {
                 printf("Limb %d: packet %d received\n", l, p);
                 limbs[l].slots[p].received = true;
             } else {
