@@ -251,9 +251,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             
             
             uint16_t* fixed = forney(lambda, bm_len, syn, 800, sym_in, 1600, pos, err_count);
-            memcpy(sym_in, fixed, 1600 * sizeof(uint16_t));
-            
-            free(fixed);
+
             free(lambda);
             free(pos);
         }
