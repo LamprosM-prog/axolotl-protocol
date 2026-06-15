@@ -3,6 +3,7 @@
 #include "../rs/rs_encoder.h"
 #include <stdlib.h>
 #include <string.h>  
+#include <stdio.h>
 #include <sys/time.h>
 #include "../rs/gf.h"
 #include "../rs/rs_decode.h"
