@@ -115,14 +115,13 @@ int *chien_search(uint16_t *lambda, int lambda_len, int codeword_len,
         uint16_t x = gf_generator(i);
         uint16_t eval = poly_evaluate(lambda, lambda_len, x);
         if (eval == 0)
-        {
-            int locator_exp = 65535 - i;
-            int position = (65535 - i) - 1;
-            if (position >= 0 && position < codeword_len)
-            {
+        {   
+            int position = 65534 - i;
+            if (position >= 0 && position < codeword_len) {
                 positions[*out_count] = position;
                 (*out_count)++;
             }
+
         }
     }
     
