@@ -237,9 +237,13 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         for (int i = 0; i < 1600; i++) {
             sym_in[i] = ((uint16_t)codeword[i*2] << 8) | codeword[i*2+1];
         }
-        
+        int nonzero = 0;
+        for (int i = 0; i < 1600; i++)
+            if (sym_in[i] != 0) nonzero++;
+        printf("Limb %u: nonzero symbols = %d/1600\n", l, nonzero);
 
         uint16_t *syn = compute_syndromes(sym_in, 1600, 800);
+        printf("Limb %u: syn[0]=%04x syn[1]=%04x syn[2]=%04x\n", l, syn[0], syn[1], syn[2]);
         if (check_errors(syn, 800)) {
             int bm_len, err_count;
             uint16_t *lambda = berlekamp_massey(syn, 800, &bm_len);
