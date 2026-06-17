@@ -215,6 +215,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
                 limbs[l].slots[p].received = true;
             } else {
                 memset(limbs[l].slots[p].data, 0, PACKET_SIZE);
+                printf("Limb %d: packet %d lost\n", l, p);
                 limbs[l].slots[p].received = false;  
             }
         }
@@ -242,7 +243,6 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         if (check_errors(syn, 800)) {
             int bm_len, err_count;
             uint16_t *lambda = berlekamp_massey(syn, 800, &bm_len);
-            printf("Limb %u: err_count=%d\n", l, err_count);
             int *pos = chien_search(lambda, bm_len, 1600, &err_count);
             printf("Limb %u: err_count=%d\n", l, err_count);
             if(err_count < 0 || err_count > 400){
@@ -268,6 +268,10 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             frame[i*2+1] = sym_in[i] & 0xFF;
         }
 
+        printf("Limb %u frame[0..31]: ", l);
+        for (int i = 0; i < 32; i++) printf("%02x ", frame[i]);
+        printf("\n");
+
         uint8_t c1[C1_SIZE], c2[C2_SIZE];
         memcpy(c1, frame, C1_SIZE);
         memcpy(c2, frame + 512, C2_SIZE);
@@ -287,8 +291,8 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
 
         if (!fs_verify(fss_params, fss_pkey, ciphertext, C1_SIZE + C2_SIZE, &sig)) {
             (*limb_statuses)[l] = LIMB_TAMPERED;
-            fs_sig_clear(&sig);
-            continue;
+            // fs_sig_clear(&sig);
+            // continue;
         }
         fs_sig_clear(&sig);
 
