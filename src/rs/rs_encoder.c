@@ -43,7 +43,6 @@ uint16_t*  encode(uint16_t* message,uint16_t* gen_poly, int msg_len, int eccLeng
     for(int i = 0; i < eccLength; i++) {
         codeword[msg_len + i] = remainder[i];
     }
-    printf("rem_len=%d\n", rem_len);
     free(remainder);
     return codeword;
 }

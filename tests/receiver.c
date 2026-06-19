@@ -37,8 +37,8 @@ int main() {
     // SOCKET 
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     struct sockaddr_in addr;
-    addr.sin_family      = AF_INET;
-    addr.sin_port        = htons(PORT);
+    addr.sin_family = AF_INET;
+    addr.sin_port    = htons(PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
     bind(sockfd, (struct sockaddr *)&addr, sizeof(addr));
     printf("Listening on port %d...\n", PORT);

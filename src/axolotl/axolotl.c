@@ -129,9 +129,7 @@ AxolotlSession *axolotl_init(uint8_t *data, uint32_t len,mpz_t pkey,
             codeword[i*2]   = (codeword_ptr[i] >> 8) & 0xFF;
             codeword[i*2+1] =  codeword_ptr[i] & 0xFF;
         }
-        uint32_t crc = 0;
-        for (int i = 0; i < LIMB_SIZE; i++) crc = crc * 31 + codeword[i];
-        printf("SEND Limb %u codeword checksum: %u\n", l, crc);
+
 
         free(codeword_ptr);
         fs_sig_clear(&sig);
@@ -268,18 +266,14 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             free(pos);
         }
         free(syn);
-        
-        uint32_t crc = 0;
-        for (int i = 0; i < LIMB_SIZE; i++) crc = crc * 31 + codeword[i];
-        printf("RECV Limb %u codeword checksum: %u\n", l, crc);
-        
+
         uint8_t frame[DATA_BYTES];
         for (int i = 0; i < 1800; i++) {
             frame[i*2] =(sym_in[i] >> 8) & 0xFF;
             frame[i*2+1] = sym_in[i] & 0xFF;
         }
 
-        printf("Limb %u frame[0..31]: ", l);
+
         for (int i = 0; i < 32; i++) printf("%02x ", frame[i]);
         printf("\n");
 
