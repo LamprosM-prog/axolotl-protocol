@@ -269,6 +269,10 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         }
         free(syn);
         
+        uint32_t crc = 0;
+        for (int i = 0; i < LIMB_SIZE; i++) crc = crc * 31 + codeword[i];
+        printf("RECV Limb %u codeword checksum: %u\n", l, crc);
+        
         uint8_t frame[DATA_BYTES];
         for (int i = 0; i < 1800; i++) {
             frame[i*2] =(sym_in[i] >> 8) & 0xFF;
