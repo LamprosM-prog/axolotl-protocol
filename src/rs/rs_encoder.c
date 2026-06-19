@@ -3,6 +3,7 @@
 #include "rs_encoder.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 uint16_t* build(int eccLength, int* out_len)
 {
