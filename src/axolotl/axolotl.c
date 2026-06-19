@@ -66,8 +66,8 @@ AxolotlSession *axolotl_init(uint8_t *data, uint32_t len,mpz_t pkey,
     uint32_t num_limbs = (len + RAW_CHUNK_SIZE - 1) / RAW_CHUNK_SIZE;
 
     AxolotlSession *sess = malloc(sizeof(AxolotlSession));
-    sess->limbs          = malloc(sizeof(Limb) * num_limbs);
-    sess->num_limbs      = num_limbs;
+    sess->limbs = malloc(sizeof(Limb) * num_limbs);
+    sess->num_limbs = num_limbs;
     sess->total_data_len = len;
 
     for (uint32_t l = 0; l < num_limbs; l++) {
@@ -152,7 +152,7 @@ int axolotl_send(int sockfd, struct sockaddr_in *dest, AxolotlSession *sess) {
     // -- HANDSHAKE --
     SessionOpen open;
     open.total_data_len = sess->total_data_len;
-    open.num_limbs      = sess->num_limbs;
+    open.num_limbs = sess->num_limbs;
     sendto(sockfd, &open, sizeof(open), 0,
            (struct sockaddr *)dest, sizeof(*dest));
 
@@ -241,10 +241,8 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         int nonzero = 0;
         for (int i = 0; i < 1800; i++)
             if (sym_in[i] != 0) nonzero++;
-        printf("Limb %u: nonzero symbols = %d/1600\n", l, nonzero);
 
         uint16_t *syn = compute_syndromes(sym_in, 1800, 1000);
-        printf("Limb %u: syn[0]=%04x syn[1]=%04x syn[2]=%04x\n", l, syn[0], syn[1], syn[2]);
         if (check_errors(syn, 1000)) {
             int bm_len, err_count;
             uint16_t *lambda = berlekamp_massey(syn, 1000, &bm_len);
@@ -272,10 +270,6 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             frame[i*2] =(sym_in[i] >> 8) & 0xFF;
             frame[i*2+1] = sym_in[i] & 0xFF;
         }
-
-
-        for (int i = 0; i < 32; i++) printf("%02x ", frame[i]);
-        printf("\n");
 
         uint8_t c1[C1_SIZE], c2[C2_SIZE];
         memcpy(c1, frame, C1_SIZE);
