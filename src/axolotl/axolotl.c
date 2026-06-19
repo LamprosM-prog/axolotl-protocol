@@ -129,6 +129,9 @@ AxolotlSession *axolotl_init(uint8_t *data, uint32_t len,mpz_t pkey,
             codeword[i*2]   = (codeword_ptr[i] >> 8) & 0xFF;
             codeword[i*2+1] =  codeword_ptr[i] & 0xFF;
         }
+        uint32_t crc = 0;
+        for (int i = 0; i < LIMB_SIZE; i++) crc = crc * 31 + codeword[i];
+        printf("SEND Limb %u codeword checksum: %u\n", l, crc);
 
         free(codeword_ptr);
         fs_sig_clear(&sig);
