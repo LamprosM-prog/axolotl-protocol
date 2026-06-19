@@ -116,7 +116,8 @@ int *chien_search(uint16_t *lambda, int lambda_len, int codeword_len,
         uint16_t eval = poly_evaluate(lambda, lambda_len, x);
         if (eval == 0)
         {   
-            int position = 65534 - i;
+            int locator_exp = 65535 - i;
+            int position = (codeword_len - 1) - locator_exp;
             if (position >= 0 && position < codeword_len) {
                 positions[*out_count] = position;
                 (*out_count)++;

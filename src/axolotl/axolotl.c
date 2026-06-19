@@ -114,14 +114,14 @@ AxolotlSession *axolotl_init(uint8_t *data, uint32_t len,mpz_t pkey,
         memcpy(frame + 1056, s, S_SIZE); // 256
         memset(frame + 1312, 0, PADDING_SIZE);  // 288
 
-        uint16_t symbols[800];
-        for (int i = 0; i < 800; i++){
+        uint16_t symbols[1000];
+        for (int i = 0; i < 1000; i++){
             symbols[i] = ((uint16_t)frame[i*2] << 8) | frame[i*2+1];
         }
 
         int gen_len, codeword_len;
-        uint16_t *gen = build(800, &gen_len);    
-        uint16_t *codeword_ptr = encode(symbols, gen, 800, 800, &codeword_len);
+        uint16_t *gen = build(1000, &gen_len);    
+        uint16_t *codeword_ptr = encode(symbols, gen, 800, 1000, &codeword_len);
         free(gen);
 
         uint8_t codeword[LIMB_SIZE];
@@ -233,23 +233,23 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
                    PACKET_SIZE);
         }
 
-        uint16_t sym_in[1600];
-        for (int i = 0; i < 1600; i++) {
+        uint16_t sym_in[1800];
+        for (int i = 0; i < 1800; i++) {
             sym_in[i] = ((uint16_t)codeword[i*2] << 8) | codeword[i*2+1];
         }
         int nonzero = 0;
-        for (int i = 0; i < 1600; i++)
+        for (int i = 0; i < 1800; i++)
             if (sym_in[i] != 0) nonzero++;
         printf("Limb %u: nonzero symbols = %d/1600\n", l, nonzero);
 
-        uint16_t *syn = compute_syndromes(sym_in, 1600, 800);
+        uint16_t *syn = compute_syndromes(sym_in, 1800, 1000);
         printf("Limb %u: syn[0]=%04x syn[1]=%04x syn[2]=%04x\n", l, syn[0], syn[1], syn[2]);
-        if (check_errors(syn, 800)) {
+        if (check_errors(syn, 1000)) {
             int bm_len, err_count;
-            uint16_t *lambda = berlekamp_massey(syn, 800, &bm_len);
-            int *pos = chien_search(lambda, bm_len, 1600, &err_count);
+            uint16_t *lambda = berlekamp_massey(syn, 1000, &bm_len);
+            int *pos = chien_search(lambda, bm_len, 1800, &err_count);
             printf("Limb %u: err_count=%d\n", l, err_count);
-            if(err_count < 0 || err_count > 400){
+            if(err_count < 0 || err_count > 500){
                 printf("Limb %u: err_count=%d\n", l, err_count);
                 (*limb_statuses)[l] = LIMB_LOST;
                 free(syn);
@@ -259,7 +259,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
             }
             
             
-            forney(lambda, bm_len, syn, 800, sym_in, 1600, pos, err_count);
+            forney(lambda, bm_len, syn, 1000, sym_in, 1800, pos, err_count);
 
             free(lambda);
             free(pos);
@@ -267,7 +267,7 @@ int axolotl_recv(int sockfd, uint8_t *out_buf, uint32_t *out_len, mpz_t skey, El
         free(syn);
         
         uint8_t frame[DATA_BYTES];
-        for (int i = 0; i < 800; i++) {
+        for (int i = 0; i < 1800; i++) {
             frame[i*2] =(sym_in[i] >> 8) & 0xFF;
             frame[i*2+1] = sym_in[i] & 0xFF;
         }

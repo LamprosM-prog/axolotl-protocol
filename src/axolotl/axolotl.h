@@ -11,9 +11,9 @@
 #define E_SIZE           32
 #define S_SIZE           256
 #define PADDING_SIZE     288
-#define DATA_BYTES       1600   // 800 symbols * 2 bytes
-#define LIMB_SIZE        3200   // 1600 symbols * 2 bytes
-#define PACKETS_PER_LIMB 32
+#define DATA_BYTES       1600   // 1000 symbols * 2 bytes
+#define LIMB_SIZE        3600   // 1800 symbols * 2 bytes
+#define PACKETS_PER_LIMB 36
 #define PACKET_SIZE      100
 
 typedef enum {
